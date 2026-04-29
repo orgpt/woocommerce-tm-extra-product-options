@@ -3,6 +3,10 @@
 
 	var floatingBoxObserverStarted = false;
 
+	function getFloatingBoxElement() {
+		return document.querySelector( '.tm-floating-box.bottom.left, .tm-floating-box.left, .tm-floating-box' );
+	}
+
 	function getContainers() {
 		return Array.prototype.slice.call( document.querySelectorAll( '.tm-extra-product-options' ) );
 	}
@@ -206,7 +210,7 @@
 	}
 
 	function setupFloatingBoxToggle() {
-		var floatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
+		var floatingBox = getFloatingBoxElement();
 		var toggleButton;
 
 		toggleButton = document.querySelector( '.tm-floating-box-toggle' );
@@ -215,11 +219,11 @@
 			toggleButton = document.createElement( 'button' );
 			toggleButton.type = 'button';
 			toggleButton.className = 'tm-floating-box-toggle';
-			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span>';
+			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span><span class="tm-floating-box-toggle-text">الملخص</span>';
 			document.body.appendChild( toggleButton );
 
 			toggleButton.addEventListener( 'click', function() {
-				var currentFloatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
+				var currentFloatingBox = getFloatingBoxElement();
 
 				if ( ! currentFloatingBox ) {
 					return;
@@ -315,7 +319,7 @@
 	document.addEventListener( 'DOMContentLoaded', initAll );
 	window.addEventListener( 'load', initAll );
 	window.addEventListener( 'resize', function() {
-		var floatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
+		var floatingBox = getFloatingBoxElement();
 		var toggleButton = document.querySelector( '.tm-floating-box-toggle' );
 
 		if ( toggleButton ) {

@@ -371,20 +371,30 @@
 }
 
 .tm-floating-box-toggle {
+	all: unset;
 	position: fixed;
 	left: 48px;
 	bottom: 24px;
-	width: 52px;
+	min-width: 56px;
 	height: 52px;
-	display: inline-flex;
+	display: inline-flex !important;
 	align-items: center;
 	justify-content: center;
+	gap: 8px;
+	padding: 0 14px;
+	box-sizing: border-box;
 	border: 1px solid rgb(255 255 255 / 8%);
 	border-radius: 999px;
-	background: linear-gradient(180deg, #161616, #000);
-	box-shadow: 0 10px 24px rgb(0 0 0 / 45%);
+	background: linear-gradient(180deg, #e81d2e, #7d0913) !important;
+	box-shadow: 0 10px 24px rgb(0 0 0 / 45%) !important;
 	cursor: pointer;
-	z-index: 120;
+	color: #fff !important;
+	font-size: 13px !important;
+	font-weight: 700 !important;
+	line-height: 1 !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	z-index: 999999 !important;
 	transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -398,6 +408,7 @@
 	width: 16px;
 	height: 16px;
 	display: block;
+	flex: 0 0 16px;
 }
 
 .tm-floating-box-toggle-icon::before {
@@ -412,6 +423,11 @@
 
 .tm-floating-box-toggle.tm-is-collapsed .tm-floating-box-toggle-icon::before {
 	transform: rotate(45deg);
+}
+
+.tm-floating-box-toggle-text {
+	display: inline-block;
+	white-space: nowrap;
 }
 
 @keyframes tm-spin {
@@ -461,7 +477,12 @@
 
 @media (max-width: 786px) {
 	.tm-floating-box-toggle {
-		width: 48px;
+		min-width: 48px;
 		height: 48px;
+		padding: 0 12px;
+	}
+
+	.tm-floating-box-toggle-text {
+		display: none;
 	}
 }

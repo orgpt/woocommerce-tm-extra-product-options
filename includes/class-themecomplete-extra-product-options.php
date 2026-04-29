@@ -215,6 +215,13 @@ final class THEMECOMPLETE_Extra_Product_Options {
 	public $product_options_minmax = [];
 
 	/**
+	 * Cache for default configured EPO prices.
+	 *
+	 * @var array<mixed>
+	 */
+	private $default_epo_price_cache = [];
+
+	/**
 	 * Current free text replacement
 	 *
 	 * @var string
@@ -500,6 +507,7 @@ final class THEMECOMPLETE_Extra_Product_Options {
 		// Force Select Options.
 		add_filter( 'woocommerce_product_add_to_cart_url', [ $this, 'add_to_cart_url' ], 50, 1 );
 		add_action( 'woocommerce_product_add_to_cart_text', [ $this, 'add_to_cart_text' ], 10, 1 );
+		add_filter( 'woocommerce_loop_add_to_cart_link', [ $this, 'woocommerce_loop_add_to_cart_link' ], 10, 3 );
 		add_filter( 'woocommerce_cart_redirect_after_error', [ $this, 'woocommerce_cart_redirect_after_error' ], 50, 2 );
 
 		// Enable shortcodes for element labels in Normal (Local) Mode.
@@ -883,11 +891,23 @@ final class THEMECOMPLETE_Extra_Product_Options {
 	 * @since 6.2
 	 */
 	public function woocommerce_get_price_html( $price = '', $product = false ) {
-		if ( ! $this->is_in_product_loop && ! $product instanceof WC_Product ) {
+		if ( ! $product instanceof WC_Product ) {
 			return $price;
 		}
 
+		if ( ( $this->is_in_product_loop || $this->in_related_upsells || is_shop() || is_product_category() || is_product_tag() )
+			&& $this->should_force_single_product_page_for_epo_product( $product )
+		) {
+			$default_price = $this->get_default_epo_price_html( $product );
+			if ( '' !== $default_price ) {
+				return $default_price;
+			}
+		}
+
 		$tm_meta_cpf = themecomplete_get_post_meta( $product, 'tm_meta_cpf', true );
+		if ( ! is_array( $tm_meta_cpf ) ) {
+			$tm_meta_cpf = [];
+		}
 		if ( is_array( $tm_meta_cpf ) ) {
 			$tm_price_display_mode          = isset( $tm_meta_cpf['price_display_mode'] ) ? $tm_meta_cpf['price_display_mode'] : 'none';
 			$tm_price_display_override      = isset( $tm_meta_cpf['price_display_override'] ) ? $tm_meta_cpf['price_display_override'] : '';
@@ -953,6 +973,278 @@ final class THEMECOMPLETE_Extra_Product_Options {
 		}
 
 		return apply_filters( 'woocommerce_epo_get_price_html', $price, $product );
+	}
+
+	/**
+	 * Checks if archive/shop rendering of full EPO UI should be enabled.
+	 *
+	 * @return boolean
+	 */
+	private function should_render_epo_in_product_loops() {
+		return (bool) apply_filters( 'wc_epo_render_in_product_loops', false );
+	}
+
+	/**
+	 * Checks if the product has valid EPO data.
+	 *
+	 * @param WC_Product|mixed $product The product object.
+	 * @return boolean
+	 */
+	private function product_has_valid_epo( $product = false ) {
+		if ( ! $product instanceof WC_Product ) {
+			return false;
+		}
+
+		$has_epo = THEMECOMPLETE_EPO_API()->has_options( themecomplete_get_id( $product ) );
+
+		return THEMECOMPLETE_EPO_API()->is_valid_options( $has_epo );
+	}
+
+	/**
+	 * Determines whether EPO products should redirect to the single-product page.
+	 *
+	 * @param WC_Product|mixed $product The product object.
+	 * @return boolean
+	 */
+	private function should_force_single_product_page_for_epo_product( $product = false ) {
+		if ( is_product() && ! $this->in_related_upsells ) {
+			return false;
+		}
+
+		return $this->product_has_valid_epo( $product );
+	}
+
+	/**
+	 * Returns the configured default total price for an EPO product.
+	 *
+	 * @param WC_Product|mixed $product The product object.
+	 * @return float|false
+	 */
+	private function get_default_epo_total_price( $product = false ) {
+		$id = 0;
+		$tm_meta_cpf = [];
+		$price_override = 0;
+		$epos = [];
+		$total = 0;
+		$base_price = 0;
+		$default_options_price = 0;
+
+		if ( ! $product instanceof WC_Product ) {
+			return false;
+		}
+
+		$id = themecomplete_get_id( $product );
+		if ( isset( $this->default_epo_price_cache[ $id ] ) ) {
+			return $this->default_epo_price_cache[ $id ];
+		}
+
+		$epos = $this->get_product_tm_epos( $id, '', false, true );
+		if ( ! is_array( $epos ) || ( empty( $epos['global'] ) && empty( $epos['local'] ) ) ) {
+			$this->default_epo_price_cache[ $id ] = false;
+			return false;
+		}
+
+		$tm_meta_cpf = themecomplete_get_post_meta( $product, 'tm_meta_cpf', true );
+		$price_override = ( 'no' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_global_override_product_price' ) )
+			? 0
+			: ( ( 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_global_override_product_price' ) )
+				? 1
+				: ( ! empty( $tm_meta_cpf['price_override'] ) ? 1 : 0 ) );
+
+		$base_price            = (float) apply_filters( 'wc_epo_product_price', $product->get_price() );
+		$default_options_price = $this->get_default_epo_price_from_nodes(
+			[
+				'global' => isset( $epos['global'] ) ? $epos['global'] : [],
+				'local'  => isset( $epos['local'] ) ? $epos['local'] : [],
+			]
+		);
+		$total                 = $price_override ? $default_options_price : $base_price + $default_options_price;
+
+		$this->default_epo_price_cache[ $id ] = $total;
+
+		return $total;
+	}
+
+	/**
+	 * Recursively sums supported default EPO values from sections/elements.
+	 *
+	 * @param array<mixed> $nodes The nodes to parse.
+	 * @return float
+	 */
+	private function get_default_epo_price_from_nodes( $nodes = [] ) {
+		$total = 0;
+
+		if ( ! is_array( $nodes ) ) {
+			return $total;
+		}
+
+		foreach ( $nodes as $node ) {
+			if ( ! is_array( $node ) ) {
+				continue;
+			}
+
+			if ( isset( $node['type'] ) ) {
+				$total += $this->get_default_epo_price_from_element( $node );
+				continue;
+			}
+
+			if ( isset( $node['sections'] ) && is_array( $node['sections'] ) ) {
+				$total += $this->get_default_epo_price_from_nodes( $node['sections'] );
+				continue;
+			}
+
+			if ( isset( $node['elements'] ) && is_array( $node['elements'] ) ) {
+				$total += $this->get_default_epo_price_from_nodes( $node['elements'] );
+				continue;
+			}
+
+			$total += $this->get_default_epo_price_from_nodes( $node );
+		}
+
+		return $total;
+	}
+
+	/**
+	 * Returns the price contribution of a default element value.
+	 *
+	 * @param array<mixed> $element The element array.
+	 * @return float
+	 */
+	private function get_default_epo_price_from_element( $element = [] ) {
+		$type = isset( $element['type'] ) ? $element['type'] : '';
+		$default_value = isset( $element['default_value'] ) ? $element['default_value'] : '';
+		$total = 0;
+
+		if ( empty( $element['enabled'] ) && isset( $element['enabled'] ) ) {
+			return 0;
+		}
+
+		if ( 'product' === $type ) {
+			return $this->get_default_epo_product_element_price( $element );
+		}
+
+		if ( '' === $default_value ) {
+			return 0;
+		}
+
+		if ( is_array( $default_value ) ) {
+			foreach ( $default_value as $choice_key ) {
+				if ( '' === $choice_key && 0 !== $choice_key && '0' !== $choice_key ) {
+					continue;
+				}
+				$total += $this->get_default_epo_choice_price( $element, $choice_key );
+			}
+
+			return $total;
+		}
+
+		return $this->get_default_epo_choice_price( $element, $default_value );
+	}
+
+	/**
+	 * Extracts a default price from supported option arrays.
+	 *
+	 * @param array<mixed> $element The element array.
+	 * @param mixed        $choice_key The selected default key.
+	 * @return float
+	 */
+	private function get_default_epo_choice_price( $element = [], $choice_key = '' ) {
+		$sources = [ 'rules_filtered', 'rules', 'original_rules_filtered', 'original_rules', 'price', 'prices' ];
+
+		foreach ( $sources as $source ) {
+			if ( ! isset( $element[ $source ] ) || ! is_array( $element[ $source ] ) || ! isset( $element[ $source ][ $choice_key ] ) ) {
+				continue;
+			}
+
+			$value = $element[ $source ][ $choice_key ];
+			if ( is_array( $value ) ) {
+				$value = reset( $value );
+			}
+
+			return is_numeric( $value ) ? (float) $value : 0;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Calculates the default configured price for product-type elements.
+	 *
+	 * @param array<mixed> $element The element array.
+	 * @return float
+	 */
+	private function get_default_epo_product_element_price( $element = [] ) {
+		$default_value = isset( $element['default_value'] ) ? $element['default_value'] : '';
+		$discount = isset( $element['discount'] ) ? $element['discount'] : '';
+		$discount_type = isset( $element['discount_type'] ) ? $element['discount_type'] : '';
+		$quantity = isset( $element['quantity_default_value'] ) && is_numeric( $element['quantity_default_value'] )
+			? (float) $element['quantity_default_value']
+			: 1;
+		$total = 0;
+		$product_ids = is_array( $default_value ) ? $default_value : [ $default_value ];
+
+		if ( empty( $element['priced_individually'] ) || empty( $product_ids ) ) {
+			return 0;
+		}
+
+		if ( $quantity <= 0 ) {
+			$quantity = 1;
+		}
+
+		foreach ( $product_ids as $default_product_id ) {
+			$associated_product = false;
+			$item_price = 0;
+
+			if ( '' === $default_product_id ) {
+				continue;
+			}
+
+			$associated_product = wc_get_product( absint( $default_product_id ) );
+			if ( ! $associated_product ) {
+				continue;
+			}
+
+			if ( 'variable' === themecomplete_get_product_type( $associated_product ) ) {
+				$item_price = $associated_product->get_variation_price(); // @phpstan-ignore-line
+			} else {
+				$item_price = $associated_product->get_price();
+			}
+
+			$item_price = THEMECOMPLETE_EPO_ASSOCIATED_PRODUCTS()->get_discounted_price( $item_price, $discount, $discount_type );
+			$total     += (float) $item_price * $quantity;
+		}
+
+		return $total;
+	}
+
+	/**
+	 * Formats the default configured price HTML for loop contexts.
+	 *
+	 * @param WC_Product|mixed $product The product object.
+	 * @return string
+	 */
+	private function get_default_epo_price_html( $product = false ) {
+		$total_price = $this->get_default_epo_total_price( $product );
+		$display_price = 0;
+		$price_html = '';
+
+		if ( false === $total_price || ! $product instanceof WC_Product ) {
+			return '';
+		}
+
+		$display_price = wc_get_price_to_display(
+			$product,
+			[
+				'price' => $total_price,
+			]
+		);
+		$price_html    = wc_price( $display_price );
+
+		if ( method_exists( $product, 'get_price_suffix' ) ) {
+			$price_html .= $product->get_price_suffix( $total_price );
+		}
+
+		return $price_html;
 	}
 
 	/**
@@ -1426,7 +1718,10 @@ final class THEMECOMPLETE_Extra_Product_Options {
 			}
 		}
 
-		if ( 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_enable_in_shop' ) && ( is_shop() || is_product_category() || is_product_tag() || function_exists( 'dokan' ) ) ) {
+		if ( $this->should_render_epo_in_product_loops()
+			&& 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_enable_in_shop' )
+			&& ( is_shop() || is_product_category() || is_product_tag() || function_exists( 'dokan' ) )
+		) {
 			add_action( 'woocommerce_after_shop_loop_item', [ $this, 'tm_woocommerce_after_shop_loop_item' ], 9 );
 		}
 
@@ -2650,6 +2945,9 @@ final class THEMECOMPLETE_Extra_Product_Options {
 		if ( ( is_product() && ! $this->in_related_upsells ) || $this->is_in_product_shortcode ) {
 			return $text;
 		}
+		if ( $this->should_force_single_product_page_for_epo_product( $product ) ) {
+			$text = ( ! empty( THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_text' ) ) ) ? esc_html( THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_text' ) ) : esc_html__( 'Select options', 'woocommerce-tm-extra-product-options' );
+		}
 		if ( 'no' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_enable_in_shop' )
 			&& 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_options' )
 			&& is_object( $product )
@@ -2660,7 +2958,7 @@ final class THEMECOMPLETE_Extra_Product_Options {
 				$text = ( ! empty( THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_text' ) ) ) ? esc_html( THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_text' ) ) : esc_html__( 'Select options', 'woocommerce-tm-extra-product-options' );
 			}
 		}
-		if ( 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_enable_in_shop' ) && ! $this->in_related_upsells ) {
+		if ( 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_enable_in_shop' ) && ! $this->in_related_upsells && ! $this->should_force_single_product_page_for_epo_product( $product ) ) {
 			$text = esc_html__( 'Add to cart', 'woocommerce' );
 		}
 
@@ -2677,6 +2975,13 @@ final class THEMECOMPLETE_Extra_Product_Options {
 	public function add_to_cart_url( $url = '' ) {
 		global $product;
 
+		if ( $this->should_force_single_product_page_for_epo_product( $product ) ) {
+			$product_url = get_permalink( themecomplete_get_id( $product ) );
+			if ( false !== $product_url ) {
+				return $product_url;
+			}
+		}
+
 		if ( ! is_product()
 			&& 'yes' === THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_options' )
 			&& is_object( $product )
@@ -2692,6 +2997,41 @@ final class THEMECOMPLETE_Extra_Product_Options {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Rebuilds loop add-to-cart markup for products that must open the product page.
+	 *
+	 * @param string             $html Existing HTML.
+	 * @param WC_Product|mixed   $product The product object.
+	 * @param array<mixed>       $args Loop button arguments.
+	 * @return string
+	 */
+	public function woocommerce_loop_add_to_cart_link( $html = '', $product = false, $args = [] ) {
+		$product_url = '';
+		$text = '';
+		$button_class = 'button';
+
+		if ( ! $this->should_force_single_product_page_for_epo_product( $product ) ) {
+			return $html;
+		}
+
+		$product_url = get_permalink( themecomplete_get_id( $product ) );
+		if ( false === $product_url ) {
+			return $html;
+		}
+
+		$text = ( ! empty( THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_text' ) ) ) ? esc_html( THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_force_select_text' ) ) : esc_html__( 'Select options', 'woocommerce-tm-extra-product-options' );
+		if ( isset( $args['class'] ) && is_string( $args['class'] ) && '' !== $args['class'] ) {
+			$button_class = trim( str_replace( [ 'ajax_add_to_cart', 'add_to_cart_button' ], '', $args['class'] ) );
+		}
+
+		return sprintf(
+			'<a href="%1$s" class="%2$s">%3$s</a>',
+			esc_url( $product_url ),
+			esc_attr( $button_class ),
+			esc_html( $text )
+		);
 	}
 
 	/**
