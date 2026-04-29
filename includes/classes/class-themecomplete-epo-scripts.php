@@ -451,6 +451,14 @@ class THEMECOMPLETE_EPO_Scripts {
 			}
 		}
 
+		wp_enqueue_style(
+			'themecomplete-epo-custom',
+			THEMECOMPLETE_EPO_PLUGIN_URL . '/assets/css/tm-epo-custom.css',
+			[ 'themecomplete-epo' ],
+			THEMECOMPLETE_EPO_VERSION,
+			'all'
+		);
+
 		$dependencies   = [];
 		$dependencies[] = 'jquery-ui-slider';
 		$dependencies[] = 'wp-util';
@@ -572,6 +580,14 @@ class THEMECOMPLETE_EPO_Scripts {
 			wp_register_script( 'themecomplete-epo', THEMECOMPLETE_EPO_PLUGIN_URL . '/assets/js/epo.min.js', $dependencies, THEMECOMPLETE_EPO_VERSION, true );
 			wp_enqueue_script( 'themecomplete-epo' );
 		}
+
+		wp_enqueue_script(
+			'themecomplete-epo-custom',
+			THEMECOMPLETE_EPO_PLUGIN_URL . '/assets/js/tm-epo-custom.js',
+			[ 'jquery', 'themecomplete-epo' ],
+			THEMECOMPLETE_EPO_VERSION,
+			true
+		);
 
 		// constants.
 		$constants = THEMECOMPLETE_EPO_DATA_STORE()->get( 'tm_epo_math' );

@@ -1,0 +1,407 @@
+/* Extra Product Options custom frontend overrides moved from settings. */
+
+/* Hide all tab slides until JS marks the active one. */
+.tm-extra-product-options .tc-tab-slide {
+	display: none;
+	visibility: hidden;
+	height: 0;
+	overflow: hidden;
+}
+
+.tc-tab-content.tcwidth-100,
+.tcwidth-100 {
+	border: none !important;
+}
+
+.tm-extra-product-options .tc-tab-slide.tm-show {
+	display: block;
+	visibility: visible;
+	height: auto;
+	overflow: visible;
+}
+
+.tm-extra-product-options:not(:has(.tc-tab-slide.tm-show)) .tc-tab-slide:first-of-type {
+	display: block;
+	visibility: visible;
+	height: auto;
+	overflow: visible;
+}
+
+.tc-product-image {
+	max-width: 270px;
+}
+
+.tc-label-text {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.stock.in-stock.wd-style-default {
+	display: none;
+}
+
+@media (min-width: 787px) {
+	.tm-extra-product-options.tc-builder-layout,
+	.tm-extra-product-options.tm-builder-tabs-right {
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: flex-start;
+		gap: 30px;
+		width: 100%;
+	}
+
+	.tm-extra-product-options .tc-tabs {
+		flex: 0 0 220px;
+		width: 220px;
+		background: #1f1f1f;
+		border-radius: 16px;
+		padding: 14px;
+		direction: rtl;
+		position: sticky;
+		top: 100px;
+	}
+
+	.tm-extra-product-options .tc-tab-headers {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.tm-extra-product-options .tab-header {
+		width: 100%;
+		padding: 10px 18px;
+		border-radius: 10px;
+		border: 2px solid #444;
+		background: rgb(255 255 255 / 3%);
+		color: #fff;
+		cursor: pointer;
+		text-align: right;
+		transition: all 0.25s ease;
+	}
+
+	.tm-extra-product-options .tab-header.open {
+		background: rgb(255 0 0 / 15%);
+		border-color: #f00;
+		font-weight: 700;
+	}
+
+	.tm-extra-product-options .tc-tab-content {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.tm-extra-product-options .tc-epo-element-product-li-container {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 20px;
+	}
+
+	.tm-extra-product-options .tc-epo-element-product-container {
+		background: #2a2a2a;
+		border-radius: 16px;
+		padding: 16px;
+		border: 1px solid #3a3a3a;
+		transition: all 0.25s ease;
+	}
+
+	.tm-extra-product-options .tc-active .tc-epo-element-product-container {
+		border-color: #f90;
+		box-shadow: 0 0 18px rgb(255 153 0 / 35%);
+	}
+
+	.tm-extra-product-options .tc-epo-element-product-container img {
+		width: 100%;
+		height: 180px;
+		object-fit: contain;
+		margin-bottom: 10px;
+	}
+
+	.tm-extra-product-options .amount {
+		color: #f00;
+		font-weight: 700;
+		text-align: center;
+		display: block;
+	}
+}
+
+@media (max-width: 786px) {
+	.tm-extra-product-options.tc-builder-layout,
+	.tm-extra-product-options.tm-builder-tabs-right {
+		display: flex;
+		flex-direction: column;
+		gap: 15px;
+		width: 100%;
+	}
+
+	.tm-extra-product-options .tc-tabs {
+		order: -1;
+		position: sticky;
+		top: 65px;
+		left: 50%;
+		z-index: 999;
+		background: #000;
+		width: 164vw;
+		margin-left: -71vw;
+		padding: 10px 0;
+		border-bottom: 1px solid #333;
+		box-shadow: 0 4px 15px rgb(0 0 0 / 50%);
+	}
+
+	.tc-tab-headers-wrap {
+		width: 100% !important;
+		max-width: 100% !important;
+		overflow: hidden;
+	}
+
+	.tm-extra-product-options .tc-tab-headers {
+		display: flex !important;
+		flex-wrap: nowrap !important;
+		overflow-x: auto !important;
+		overflow-y: hidden;
+		gap: 10px;
+		padding: 0 15px;
+		width: 100%;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+	}
+
+	.tm-extra-product-options .tc-tab-headers::-webkit-scrollbar {
+		display: none;
+	}
+
+	.tm-extra-product-options .tab-header {
+		flex: 0 0 auto;
+		padding: 8px 20px;
+		background: #1f1f1f;
+		border: 1px solid #333;
+		color: #ccc;
+		font-size: 14px;
+		white-space: nowrap;
+		transition: all 0.3s ease;
+	}
+
+	.tm-extra-product-options .tab-header.open {
+		background: #e81d2e;
+		color: #fff;
+		border-color: #e81d2e;
+		box-shadow: 0 2px 10px rgb(232 29 46 / 40%);
+	}
+
+	.tc-scroll-left-arrow,
+	.tc-scroll-right-arrow {
+		display: none !important;
+	}
+
+	.tm-extra-product-options .tc-tab-content {
+		width: 100%;
+		padding: 0 5px;
+	}
+
+	.tm-extra-product-options .tc-epo-element-product-li-container {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.tm-extra-product-options .tc-epo-element-product-container {
+		display: flex;
+		align-items: center;
+		gap: 15px;
+		background: #222;
+		border-radius: 12px;
+		padding: 12px;
+		border: 1px solid #333;
+	}
+
+	.tm-extra-product-options .tc-active .tc-epo-element-product-container {
+		border-color: #f90;
+		background: #2a2215;
+	}
+
+	.tm-extra-product-options .tc-epo-element-product-container img {
+		width: 80px;
+		height: 80px;
+		object-fit: contain;
+		flex-shrink: 0;
+	}
+
+	.tm-extra-product-options .amount {
+		color: #ff3b3b;
+		font-weight: 700;
+		font-size: 15px;
+	}
+
+	.tm-floating-box.bottom.left {
+		width: 90%;
+		left: 5%;
+		bottom: 10px;
+		margin: 0;
+	}
+}
+
+.tm-tabs-progress {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 3px;
+	background: #f00;
+	width: 0%;
+	transition: width 0.3s ease;
+	z-index: 1000;
+}
+
+.tm-tabs-fade-left,
+.tm-tabs-fade-right {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 30px;
+	pointer-events: none;
+	z-index: 1001;
+	opacity: 0;
+	transition: opacity 0.3s;
+}
+
+.tm-tabs-fade-left {
+	left: 0;
+	background: linear-gradient(to right, #000, transparent);
+}
+
+.tm-tabs-fade-right {
+	right: 0;
+	background: linear-gradient(to left, #000, transparent);
+}
+
+.tm-tabs-fade-left.active,
+.tm-tabs-fade-right.active {
+	opacity: 1;
+}
+
+.tm-quantity-vertical {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.tm-quantity-vertical input[type="number"] {
+	width: 60px;
+	text-align: center;
+	background: #111;
+	border: 1px solid #333;
+	color: #fff;
+	border-radius: 4px;
+	padding: 4px;
+}
+
+.tm-qty-btn {
+	width: 36px;
+	height: 28px;
+	background: #222;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1;
+	border-radius: 6px;
+}
+
+.tm-qty-btn:hover {
+	background: #000;
+}
+
+.tm-floating-box.bottom.left {
+	position: fixed;
+	left: 20px;
+	bottom: 20px;
+	z-index: 99;
+	width: 17%;
+	background: #000;
+	border: 1px solid #333;
+	border-radius: 20px;
+	padding: 1rem;
+	margin-bottom: 30px;
+	margin-left: 20px;
+	box-shadow: 0 10px 30px rgb(0 0 0 / 50%);
+}
+
+@property --rotate {
+	syntax: "<angle>";
+	initial-value: 0deg;
+	inherits: false;
+}
+
+.tm-floating-box.bottom.left::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	padding: 3px;
+	border-radius: inherit;
+	background: linear-gradient(var(--rotate), #262626, #302f2f 43%, #e81d2e);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	animation: tm-spin 3s linear infinite;
+	pointer-events: none;
+}
+
+.tm-floating-box.bottom.left::after {
+	content: "";
+	position: absolute;
+	inset: -10px;
+	border-radius: inherit;
+	background: linear-gradient(var(--rotate), #302f2f, #e81d2e59 43%, #0a0a0a);
+	filter: blur(20px);
+	opacity: 0.7;
+	z-index: -1;
+	animation: tm-spin 6s linear infinite;
+	pointer-events: none;
+}
+
+@keyframes tm-spin {
+	0% {
+		--rotate: 0deg;
+	}
+
+	100% {
+		--rotate: 360deg;
+	}
+}
+
+.tm-fb {
+	max-height: 200px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: #ff3b3b transparent;
+}
+
+.tm-fb::-webkit-scrollbar {
+	width: 6px;
+}
+
+.tm-fb::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.tm-fb::-webkit-scrollbar-thumb {
+	background-color: #ff3b3b;
+	border-radius: 10px;
+	opacity: 0.6;
+	transition: opacity 0.2s ease;
+}
+
+.tm-fb::-webkit-scrollbar-thumb:hover {
+	opacity: 1;
+}
+
+.tm-fb:not(:hover)::-webkit-scrollbar-thumb {
+	opacity: 0.3;
+}
+
+.tm-extra-product-options .cpf-type-product-thumbnail ul.tmcp-ul-wrap.tm-element-ul-product > li.tmcp-field-wrap img.wp-post-image,
+.tm-extra-product-options .cpf-type-product-thumbnailmultiple ul.tmcp-ul-wrap.tm-element-ul-product > li.tmcp-field-wrap img.wp-post-image {
+	width: 100% !important;
+}
