@@ -183,29 +183,34 @@
 		}
 
 		if ( ! floatingBox ) {
-			toggleButton.style.left = '48px';
+			toggleButton.style.left = '24px';
 			toggleButton.style.bottom = '24px';
 			toggleButton.style.top = 'auto';
 			return;
 		}
 
 		rect = floatingBox.getBoundingClientRect();
-		toggleButton.style.left = rect.left + 18 + 'px';
-		toggleButton.style.top = rect.bottom - ( toggleButton.offsetHeight / 2 ) + 'px';
+		toggleButton.style.left = rect.left + 14 + 'px';
+		toggleButton.style.top = rect.top - ( toggleButton.offsetHeight / 2 ) + 'px';
 		toggleButton.style.bottom = 'auto';
 	}
 
 	function updateFloatingBoxToggleState( floatingBox, toggleButton ) {
 		var isCollapsed;
+		var textNode;
 
 		if ( ! floatingBox || ! toggleButton ) {
 			return;
 		}
 
 		isCollapsed = floatingBox.classList.contains( 'tm-is-collapsed' );
+		textNode = toggleButton.querySelector( '.tm-floating-box-toggle-text' );
 		toggleButton.classList.toggle( 'tm-is-collapsed', isCollapsed );
 		toggleButton.setAttribute( 'aria-expanded', isCollapsed ? 'false' : 'true' );
 		toggleButton.setAttribute( 'aria-label', isCollapsed ? 'Show summary box' : 'Hide summary box' );
+		if ( textNode ) {
+			textNode.textContent = isCollapsed ? 'إظهار' : 'إخفاء';
+		}
 		syncFloatingBoxTogglePosition( floatingBox, toggleButton );
 	}
 
@@ -219,7 +224,7 @@
 			toggleButton = document.createElement( 'button' );
 			toggleButton.type = 'button';
 			toggleButton.className = 'tm-floating-box-toggle';
-			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span><span class="tm-floating-box-toggle-text">الملخص</span>';
+			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span><span class="tm-floating-box-toggle-text">إخفاء</span>';
 			document.body.appendChild( toggleButton );
 
 			toggleButton.addEventListener( 'click', function() {

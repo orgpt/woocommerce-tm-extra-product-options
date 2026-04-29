@@ -373,23 +373,23 @@
 .tm-floating-box-toggle {
 	all: unset;
 	position: fixed;
-	left: 48px;
+	left: 24px;
 	bottom: 24px;
-	min-width: 56px;
-	height: 52px;
+	min-width: 96px;
+	height: 42px;
 	display: inline-flex !important;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
-	padding: 0 14px;
+	padding: 0 16px;
 	box-sizing: border-box;
-	border: 1px solid rgb(255 255 255 / 8%);
+	border: 1px solid rgb(255 255 255 / 16%);
 	border-radius: 999px;
 	background: linear-gradient(180deg, #e81d2e, #7d0913) !important;
 	box-shadow: 0 10px 24px rgb(0 0 0 / 45%) !important;
 	cursor: pointer;
 	color: #fff !important;
-	font-size: 13px !important;
+	font-size: 14px !important;
 	font-weight: 700 !important;
 	line-height: 1 !important;
 	opacity: 1 !important;
@@ -405,18 +405,18 @@
 
 .tm-floating-box-toggle-icon {
 	position: relative;
-	width: 16px;
-	height: 16px;
+	width: 14px;
+	height: 14px;
 	display: block;
-	flex: 0 0 16px;
+	flex: 0 0 14px;
 }
 
 .tm-floating-box-toggle-icon::before {
 	content: "";
 	position: absolute;
 	inset: 1px;
-	border-right: 3px solid #fff;
-	border-bottom: 3px solid #fff;
+	border-right: 2px solid #fff;
+	border-bottom: 2px solid #fff;
 	transform: rotate(225deg);
 	transition: transform 0.2s ease;
 }
@@ -477,12 +477,8 @@
 
 @media (max-width: 786px) {
 	.tm-floating-box-toggle {
-		min-width: 48px;
-		height: 48px;
-		padding: 0 12px;
-	}
-
-	.tm-floating-box-toggle-text {
-		display: none;
+		min-width: 92px;
+		height: 40px;
+		padding: 0 14px;
 	}
 }
