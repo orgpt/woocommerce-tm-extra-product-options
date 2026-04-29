@@ -372,6 +372,8 @@
 
 .tm-floating-box-toggle {
 	position: fixed;
+	left: 48px;
+	bottom: 24px;
 	width: 56px;
 	height: 56px;
 	display: inline-flex;

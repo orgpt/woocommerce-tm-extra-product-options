@@ -1,6 +1,8 @@
 ( function( window, document ) {
 	'use strict';
 
+	var floatingBoxObserverStarted = false;
+
 	function getContainers() {
 		return Array.prototype.slice.call( document.querySelectorAll( '.tm-extra-product-options' ) );
 	}
@@ -159,19 +161,28 @@
 			setupTabsUX( container );
 		} );
 
+		observeFloatingBox();
 		setupFloatingBoxToggle();
 	}
 
 	function syncFloatingBoxTogglePosition( floatingBox, toggleButton ) {
 		var rect;
 
-		if ( ! floatingBox || ! toggleButton ) {
+		if ( ! toggleButton ) {
+			return;
+		}
+
+		if ( ! floatingBox ) {
+			toggleButton.style.left = '48px';
+			toggleButton.style.bottom = '24px';
+			toggleButton.style.top = 'auto';
 			return;
 		}
 
 		rect = floatingBox.getBoundingClientRect();
 		toggleButton.style.left = rect.left + ( rect.width / 2 ) - ( toggleButton.offsetWidth / 2 ) + 'px';
 		toggleButton.style.top = rect.bottom + 12 + 'px';
+		toggleButton.style.bottom = 'auto';
 	}
 
 	function updateFloatingBoxToggleState( floatingBox, toggleButton ) {
@@ -191,10 +202,6 @@
 	function setupFloatingBoxToggle() {
 		var floatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
 		var toggleButton;
-
-		if ( ! floatingBox || floatingBox.closest( '.tm-floating-box-nks, .tm-floating-box-alt' ) ) {
-			return;
-		}
 
 		toggleButton = document.querySelector( '.tm-floating-box-toggle' );
 
@@ -217,7 +224,30 @@
 			} );
 		}
 
+		if ( ! floatingBox || floatingBox.closest( '.tm-floating-box-nks, .tm-floating-box-alt' ) ) {
+			syncFloatingBoxTogglePosition( null, toggleButton );
+			return;
+		}
+
 		updateFloatingBoxToggleState( floatingBox, toggleButton );
+	}
+
+	function observeFloatingBox() {
+		var observer;
+
+		if ( floatingBoxObserverStarted ) {
+			return;
+		}
+
+		floatingBoxObserverStarted = true;
+		observer = new MutationObserver( function() {
+			setupFloatingBoxToggle();
+		} );
+
+		observer.observe( document.body, {
+			childList: true,
+			subtree: true
+		} );
 	}
 
 	document.addEventListener( 'click', function( event ) {
@@ -282,7 +312,7 @@
 		var floatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
 		var toggleButton = document.querySelector( '.tm-floating-box-toggle' );
 
-		if ( floatingBox && toggleButton ) {
+		if ( toggleButton ) {
 			syncFloatingBoxTogglePosition( floatingBox, toggleButton );
 		}
 	} );
