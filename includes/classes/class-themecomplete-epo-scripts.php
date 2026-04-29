@@ -455,7 +455,7 @@ class THEMECOMPLETE_EPO_Scripts {
 			'themecomplete-epo-custom',
 			THEMECOMPLETE_EPO_PLUGIN_URL . '/assets/css/tm-epo-custom.css',
 			[ 'themecomplete-epo' ],
-			THEMECOMPLETE_EPO_VERSION,
+			filemtime( THEMECOMPLETE_EPO_PLUGIN_PATH . '/assets/css/tm-epo-custom.css' ),
 			'all'
 		);
 
@@ -585,7 +585,7 @@ class THEMECOMPLETE_EPO_Scripts {
 			'themecomplete-epo-custom',
 			THEMECOMPLETE_EPO_PLUGIN_URL . '/assets/js/tm-epo-custom.js',
 			[ 'jquery', 'themecomplete-epo' ],
-			THEMECOMPLETE_EPO_VERSION,
+			filemtime( THEMECOMPLETE_EPO_PLUGIN_PATH . '/assets/js/tm-epo-custom.js' ),
 			true
 		);
 
