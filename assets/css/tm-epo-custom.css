@@ -326,6 +326,15 @@
 	margin-bottom: 30px;
 	margin-left: 20px;
 	box-shadow: 0 10px 30px rgb(0 0 0 / 50%);
+	transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease;
+	transform-origin: bottom left;
+}
+
+.tm-floating-box.bottom.left.tm-is-collapsed {
+	opacity: 0 !important;
+	visibility: hidden !important;
+	pointer-events: none !important;
+	transform: translateY(10px) scale(0.98);
 }
 
 @property --rotate {
@@ -359,6 +368,48 @@
 	z-index: -1;
 	animation: tm-spin 6s linear infinite;
 	pointer-events: none;
+}
+
+.tm-floating-box-toggle {
+	position: fixed;
+	width: 56px;
+	height: 56px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgb(255 255 255 / 8%);
+	border-radius: 999px;
+	background: linear-gradient(180deg, #161616, #000);
+	box-shadow: 0 10px 24px rgb(0 0 0 / 45%);
+	cursor: pointer;
+	z-index: 110;
+	transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tm-floating-box-toggle:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 14px 30px rgb(0 0 0 / 55%);
+}
+
+.tm-floating-box-toggle-icon {
+	position: relative;
+	width: 16px;
+	height: 16px;
+	display: block;
+}
+
+.tm-floating-box-toggle-icon::before {
+	content: "";
+	position: absolute;
+	inset: 2px;
+	border-right: 3px solid #fff;
+	border-bottom: 3px solid #fff;
+	transform: rotate(225deg);
+	transition: transform 0.2s ease;
+}
+
+.tm-floating-box-toggle.tm-is-collapsed .tm-floating-box-toggle-icon::before {
+	transform: rotate(45deg);
 }
 
 @keyframes tm-spin {
@@ -404,4 +455,11 @@
 .tm-extra-product-options .cpf-type-product-thumbnail ul.tmcp-ul-wrap.tm-element-ul-product > li.tmcp-field-wrap img.wp-post-image,
 .tm-extra-product-options .cpf-type-product-thumbnailmultiple ul.tmcp-ul-wrap.tm-element-ul-product > li.tmcp-field-wrap img.wp-post-image {
 	width: 100% !important;
+}
+
+@media (max-width: 786px) {
+	.tm-floating-box-toggle {
+		width: 52px;
+		height: 52px;
+	}
 }

@@ -158,6 +158,66 @@
 			ensureActiveTab( container );
 			setupTabsUX( container );
 		} );
+
+		setupFloatingBoxToggle();
+	}
+
+	function syncFloatingBoxTogglePosition( floatingBox, toggleButton ) {
+		var rect;
+
+		if ( ! floatingBox || ! toggleButton ) {
+			return;
+		}
+
+		rect = floatingBox.getBoundingClientRect();
+		toggleButton.style.left = rect.left + ( rect.width / 2 ) - ( toggleButton.offsetWidth / 2 ) + 'px';
+		toggleButton.style.top = rect.bottom + 12 + 'px';
+	}
+
+	function updateFloatingBoxToggleState( floatingBox, toggleButton ) {
+		var isCollapsed;
+
+		if ( ! floatingBox || ! toggleButton ) {
+			return;
+		}
+
+		isCollapsed = floatingBox.classList.contains( 'tm-is-collapsed' );
+		toggleButton.classList.toggle( 'tm-is-collapsed', isCollapsed );
+		toggleButton.setAttribute( 'aria-expanded', isCollapsed ? 'false' : 'true' );
+		toggleButton.setAttribute( 'aria-label', isCollapsed ? 'Show summary box' : 'Hide summary box' );
+		syncFloatingBoxTogglePosition( floatingBox, toggleButton );
+	}
+
+	function setupFloatingBoxToggle() {
+		var floatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
+		var toggleButton;
+
+		if ( ! floatingBox || floatingBox.closest( '.tm-floating-box-nks, .tm-floating-box-alt' ) ) {
+			return;
+		}
+
+		toggleButton = document.querySelector( '.tm-floating-box-toggle' );
+
+		if ( ! toggleButton ) {
+			toggleButton = document.createElement( 'button' );
+			toggleButton.type = 'button';
+			toggleButton.className = 'tm-floating-box-toggle';
+			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span>';
+			document.body.appendChild( toggleButton );
+
+			toggleButton.addEventListener( 'click', function() {
+				var currentFloatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
+
+				if ( ! currentFloatingBox ) {
+					return;
+				}
+
+				currentFloatingBox.classList.toggle( 'tm-is-collapsed' );
+				updateFloatingBoxToggleState( currentFloatingBox, toggleButton );
+			} );
+		}
+
+		updateFloatingBoxToggleState( floatingBox, toggleButton );
 	}
 
 	document.addEventListener( 'click', function( event ) {
@@ -218,4 +278,12 @@
 	document.addEventListener( 'tm_epo_updated', initAll );
 	document.addEventListener( 'DOMContentLoaded', initAll );
 	window.addEventListener( 'load', initAll );
+	window.addEventListener( 'resize', function() {
+		var floatingBox = document.querySelector( '.tm-floating-box.bottom.left' );
+		var toggleButton = document.querySelector( '.tm-floating-box-toggle' );
+
+		if ( floatingBox && toggleButton ) {
+			syncFloatingBoxTogglePosition( floatingBox, toggleButton );
+		}
+	} );
 } )( window, document );
