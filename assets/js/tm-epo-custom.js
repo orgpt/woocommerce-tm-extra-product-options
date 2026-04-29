@@ -86,16 +86,22 @@
 	}
 
 	function scrollToActiveTab( container ) {
+		var headersWrap = container.querySelector( '.tc-tab-headers' );
 		var active = container.querySelector( '.tab-header.open' );
+		var targetLeft;
 
-		if ( ! active || typeof active.scrollIntoView !== 'function' ) {
+		if ( ! headersWrap || ! active ) {
 			return;
 		}
 
-		active.scrollIntoView( {
-			behavior: 'smooth',
-			inline: 'center',
-			block: 'nearest'
+		if ( window.innerWidth > 786 ) {
+			return;
+		}
+
+		targetLeft = active.offsetLeft - ( headersWrap.clientWidth / 2 ) + ( active.offsetWidth / 2 );
+		headersWrap.scrollTo( {
+			left: Math.max( targetLeft, 0 ),
+			behavior: 'smooth'
 		} );
 	}
 
@@ -180,8 +186,8 @@
 		}
 
 		rect = floatingBox.getBoundingClientRect();
-		toggleButton.style.left = rect.left + ( rect.width / 2 ) - ( toggleButton.offsetWidth / 2 ) + 'px';
-		toggleButton.style.top = rect.bottom + 12 + 'px';
+		toggleButton.style.left = rect.left + 18 + 'px';
+		toggleButton.style.top = rect.bottom - ( toggleButton.offsetHeight / 2 ) + 'px';
 		toggleButton.style.bottom = 'auto';
 	}
 
