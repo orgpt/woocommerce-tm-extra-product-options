@@ -1,7 +1,8 @@
 ( function( window, document ) {
 	'use strict';
 
-	var floatingBoxObserverStarted = false;
+	var floatingBoxRetryCount = 0;
+	var floatingBoxRetryTimer = 0;
 
 	function getFloatingBoxElement() {
 		return document.querySelector( '.tm-floating-box.bottom.left, .tm-floating-box.left, .tm-floating-box' );
@@ -94,11 +95,7 @@
 		var active = container.querySelector( '.tab-header.open' );
 		var targetLeft;
 
-		if ( ! headersWrap || ! active ) {
-			return;
-		}
-
-		if ( window.innerWidth > 786 ) {
+		if ( ! headersWrap || ! active || window.innerWidth > 786 ) {
 			return;
 		}
 
@@ -128,7 +125,6 @@
 		}
 
 		maxScroll = headersWrap.scrollWidth - headersWrap.clientWidth;
-
 		fadeLeft.classList.toggle( 'active', headersWrap.scrollLeft > 5 );
 		fadeRight.classList.toggle( 'active', headersWrap.scrollLeft < maxScroll - 5 );
 	}
@@ -165,16 +161,6 @@
 		refreshTabsUX( container );
 	}
 
-	function initAll() {
-		getContainers().forEach( function( container ) {
-			ensureActiveTab( container );
-			setupTabsUX( container );
-		} );
-
-		observeFloatingBox();
-		setupFloatingBoxToggle();
-	}
-
 	function syncFloatingBoxTogglePosition( floatingBox, toggleButton ) {
 		var rect;
 
@@ -208,23 +194,23 @@
 		toggleButton.classList.toggle( 'tm-is-collapsed', isCollapsed );
 		toggleButton.setAttribute( 'aria-expanded', isCollapsed ? 'false' : 'true' );
 		toggleButton.setAttribute( 'aria-label', isCollapsed ? 'Show summary box' : 'Hide summary box' );
+
 		if ( textNode ) {
-			textNode.textContent = isCollapsed ? 'إظهار' : 'إخفاء';
+			textNode.textContent = isCollapsed ? 'Show' : 'Hide';
 		}
+
 		syncFloatingBoxTogglePosition( floatingBox, toggleButton );
 	}
 
 	function setupFloatingBoxToggle() {
 		var floatingBox = getFloatingBoxElement();
-		var toggleButton;
-
-		toggleButton = document.querySelector( '.tm-floating-box-toggle' );
+		var toggleButton = document.querySelector( '.tm-floating-box-toggle' );
 
 		if ( ! toggleButton ) {
 			toggleButton = document.createElement( 'button' );
 			toggleButton.type = 'button';
 			toggleButton.className = 'tm-floating-box-toggle';
-			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span><span class="tm-floating-box-toggle-text">إخفاء</span>';
+			toggleButton.innerHTML = '<span class="tm-floating-box-toggle-icon"></span><span class="tm-floating-box-toggle-text">Hide</span>';
 			document.body.appendChild( toggleButton );
 
 			toggleButton.addEventListener( 'click', function() {
@@ -247,22 +233,30 @@
 		updateFloatingBoxToggleState( floatingBox, toggleButton );
 	}
 
-	function observeFloatingBox() {
-		var observer;
-
-		if ( floatingBoxObserverStarted ) {
+	function queueFloatingBoxRetry() {
+		if ( floatingBoxRetryTimer || floatingBoxRetryCount >= 12 ) {
 			return;
 		}
 
-		floatingBoxObserverStarted = true;
-		observer = new MutationObserver( function() {
+		floatingBoxRetryTimer = window.setTimeout( function() {
+			floatingBoxRetryTimer = 0;
+			floatingBoxRetryCount += 1;
 			setupFloatingBoxToggle();
+
+			if ( ! getFloatingBoxElement() ) {
+				queueFloatingBoxRetry();
+			}
+		}, 400 );
+	}
+
+	function initAll() {
+		getContainers().forEach( function( container ) {
+			ensureActiveTab( container );
+			setupTabsUX( container );
 		} );
 
-		observer.observe( document.body, {
-			childList: true,
-			subtree: true
-		} );
+		setupFloatingBoxToggle();
+		queueFloatingBoxRetry();
 	}
 
 	document.addEventListener( 'click', function( event ) {
@@ -314,7 +308,6 @@
 		}
 
 		value = Math.min( Math.max( value, min ), max );
-
 		input.value = value;
 		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 	} );

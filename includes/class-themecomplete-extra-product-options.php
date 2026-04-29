@@ -891,13 +891,18 @@ final class THEMECOMPLETE_Extra_Product_Options {
 	 * @since 6.2
 	 */
 	public function woocommerce_get_price_html( $price = '', $product = false ) {
+		$should_calculate_default_loop_price = false;
+
 		if ( ! $product instanceof WC_Product ) {
 			return $price;
 		}
 
-		if ( ( $this->is_in_product_loop || $this->in_related_upsells || is_shop() || is_product_category() || is_product_tag() )
-			&& $this->should_force_single_product_page_for_epo_product( $product )
-		) {
+		$should_calculate_default_loop_price = (
+			( ! is_product() && ( $this->is_in_product_loop || is_shop() || is_product_category() || is_product_tag() ) )
+			|| $this->in_related_upsells
+		);
+
+		if ( $should_calculate_default_loop_price && $this->should_force_single_product_page_for_epo_product( $product ) ) {
 			$default_price = $this->get_default_epo_price_html( $product );
 			if ( '' !== $default_price ) {
 				return $default_price;
